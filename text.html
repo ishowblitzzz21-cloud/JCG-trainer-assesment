@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jungle Cubs Gym – Trainers Self Assessment</title>
+<style>
+  :root {
+    --bg: #f3f7ee; --card: #ffffff; --ink: #1d2b1f; --muted: #5d6e60;
+    --green: #2f6b3a; --leaf: #dcebd2; --sun: #f2b632; --line: #cfdcc6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #121a13; --card: #1b261d; --ink: #e8f0e4; --muted: #9db0a0;
+            --green: #7fcf8d; --leaf: #243a28; --sun: #f2b632; --line: #2f4433; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+         font-family: "Trebuchet MS", "Segoe UI", sans-serif; line-height: 1.4; }
+  header { background: var(--green); color: #fff; padding: 20px 16px 16px; }
+  @media (prefers-color-scheme: dark) { header { background: #1f4a28; } }
+  header h1 { margin: 0; font-size: 1.5rem; color: var(--sun); }
+  header p { margin: 4px 0 0; opacity: .9; font-size: .95rem; }
+  .bar { position: sticky; top: 0; z-index: 5; background: var(--card);
+         border-bottom: 3px solid var(--sun); padding: 10px 16px;
+         display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .bar input[type=text] { flex: 1 1 200px; padding: 8px 10px; font-size: 1rem;
+         border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); }
+  .progress { flex: 1 1 180px; }
+  .progress small { color: var(--muted); }
+  .track { height: 10px; background: var(--leaf); border-radius: 6px; overflow: hidden; }
+  .fill { height: 100%; width: 0; background: var(--sun); transition: width .25s; }
+  button { padding: 8px 14px; font-size: .95rem; border: 0; border-radius: 8px;
+           background: var(--green); color: #fff; cursor: pointer; }
+  button.alt { background: transparent; color: var(--green); border: 1px solid var(--green); }
+  button:focus-visible, input:focus-visible { outline: 3px solid var(--sun); outline-offset: 2px; }
+  main { max-width: 900px; margin: 0 auto; padding: 16px; }
+  h2.section { margin: 28px 0 8px; font-size: 1.25rem; color: #1d2b1f;
+               background: var(--sun); border-radius: 10px; padding: 8px 14px; }
+  #lockNote { max-width: 900px; margin: 16px auto 0; padding: 12px 16px; background: var(--sun);
+              color: #1d2b1f; border-radius: 10px; font-weight: bold; }
+  input:disabled { cursor: not-allowed; opacity: .45; }
+  button:disabled { cursor: not-allowed; opacity: .5; }
+  .group { background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+           margin: 12px 0; overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; min-width: 640px; }
+  caption { text-align: left; font-weight: bold; padding: 10px 12px;
+            background: var(--leaf); }
+  th { font-size: .8rem; color: var(--muted); font-weight: normal; padding: 6px 4px; text-align: center; }
+  th:first-child, td:first-child { text-align: left; padding-left: 12px; }
+  td { padding: 5px 4px; border-top: 1px solid var(--line); text-align: center; }
+  td.name { width: 30%; }
+  input[type=checkbox] { width: 22px; height: 22px; accent-color: var(--green); cursor: pointer; }
+  input.remark { width: 100%; min-width: 110px; padding: 5px 8px; border: 1px solid var(--line);
+                 border-radius: 6px; background: var(--bg); color: var(--ink); }
+  .q { padding: 10px 12px; border-top: 1px solid var(--line); }
+  .q input { margin-top: 6px; }
+  details.dl { position: relative; }
+  details.dl summary { list-style: none; padding: 8px 14px; font-size: .95rem; border-radius: 8px;
+                       background: var(--green); color: #fff; cursor: pointer; }
+  details.dl summary::-webkit-details-marker { display: none; }
+  details.dl .menu { position: absolute; right: 0; top: calc(100% + 6px); z-index: 10; background: var(--card);
+                     border: 1px solid var(--line); border-radius: 8px; padding: 6px; display: grid; gap: 6px; min-width: 150px; }
+  .savebox { max-width: 900px; margin: 8px auto 48px; padding: 0 16px; display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+  #saveBtn { background: var(--sun); color: #1d2b1f; font-weight: bold; font-size: 1.1rem; padding: 14px 28px; }
+  #saveBtn:disabled { opacity: .6; cursor: wait; }
+  #saveMsg { color: var(--muted); }
+  @media print { .bar button { display: none; } }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+</head>
+<body>
+<header>
+  <h1>Jungle Cubs Gym – Trainers Self Assessment</h1>
+  <p>Pre-Sports Program for kids · Age group 10 months to 6 years</p>
+</header>
+
+<div class="bar">
+  <input type="text" id="trainer" placeholder="Trainer name" aria-label="Trainer name">
+  <input type="text" id="jcg" placeholder="Add your JCG code" aria-label="JCG code">
+  <div class="progress">
+    <small id="pct">0% rated</small>
+    <div class="track"><div class="fill" id="fill"></div></div>
+  </div>
+  <small id="status" style="color:var(--muted)">Enter your name to load or start</small>
+  <details class="dl" id="dl">
+    <summary>Download data</summary>
+    <div class="menu">
+      <button id="dlWord">Word (.doc)</button>
+      <button id="dlPdf">PDF</button>
+    </div>
+  </details>
+  <button class="alt" id="reset">Clear all</button>
+</div>
+
+<div id="lockNote" role="status">Add your name and JCG code above to unlock the checklist.</div>
+<main id="app"></main>
+<div class="savebox">
+  <button id="saveBtn">Save my data</button>
+  <span id="saveMsg" role="status"></span>
+</div>
+
+<script>
+/* ========= 1. DATA – edit this to add or remove exercises ========= */
+/* remark: true shows a Remark text box on that group's rows */
+const FORM = [
+  { section: "Floor", groups: [
+    { title: "Warm Ups & Variations", items: [
+      "General Warm up","Beam Warm up","Circuit Warm up","Equipment warm up",
+      "Animal Warm up","Prop Warm up","RAMP Warm up" ] },
+    { title: "Floor", items: [
+      "Front Roll","Pencil Roll","Backward Roll","Straddle Front Roll",
+      "Back Bend","Handstand","Splits" ] },
+    { title: "Cartwheel Stages", items: [
+      "Frog Jump","Side Frog Jump","Cartwheel on box/hurdle","Baby Cartwheel","Full Cartwheel" ],
+      question: "Usually from which leg do you ask the child to start the cartwheel?" },
+    { title: "Jumps", items: [
+      "Side Frog Jump","Reverse Frog Jumps","Jumping take off technique","Landing technique",
+      "High Jump","Tuck Jump","Star Jump","Straddle Jump","Pike Jump","180 Turn / Half Turn",
+      "360 Turn / Full Turn","Jump from height","Jump and turn from height","Long Jump",
+      "One leg hop / Langdi" ] },
+    { title: "Yoga / Steady Floor activities", items: [
+      "Tree Pose / Parvatasana","Padmasana","Pachimotanasana","Padhastasana","Konasana",
+      "Halasana","Sarvangasana / Candle stand","Vajrasana","Child Pose","Ushtrasana",
+      "Shavasana","Surya Namaskar","Bhujangasana / Cobra","Dhanurasana" ] },
+    { title: "Flexibility / Stretching (yoga activities above are also part of this section)", items: [
+      "Butterfly Seat","Middle Split","Side Split – both legs","Split Swings technique",
+      "Front Kick Standing","Side Kick Standing – both legs","Back kick" ] },
+  ]},
+  { section: "Body Balancing", groups: [
+    { title: "Floor", items: [
+      "Toe Hold / Tadasana","Toe Walk","Front Leg Hold","Side Leg Hold – left leg",
+      "Side Leg Hold – right leg","Y-Lever","V-seat","Front lever / Airplane hold","Squat Seat" ] },
+    { title: "Partner Activities", items: [
+      "Straddle Swings","V seat with partner","Caterpillar walk","Back to back",
+      "Dip position high five","Hand Holding squats","Y lever hold","Camel hold",
+      "Bend leg V seat","V seat","Camel tunnel","Wheel barrow","Pencil Roll","Front Roll",
+      "Ball Passing" ] },
+  ]},
+  { section: "Balancing Beam: Small beam, Heighted beam, Wooden Bench", groups: [
+    { title: "Small Beam", remark: true, items: [
+      "Directional Walk","Animal Walk","Hopping","Toe Walk","Dip Walk","Stroke walk / kick and walk",
+      "V-Seat","Kick and turn","Toe Turn","Front / forward roll","Baby Cartwheel",
+      "Open Shut jumps","Jump up – Jump down","Tummy Table Walk" ] },
+    { title: "Big Height Beam", remark: true, items: [
+      "Directional Walk","Hopping","Toe Walk","Dip Walk","Stroke walk / kick and walk","V Seat",
+      "V Seat to squat","Kick and turn","Toe Turn","Hand position before rolling",
+      "Front / forward roll","Baby Cartwheel","Cartwheel on beam","Jump and squat",
+      "Jump to Straddle Stand","Jump and land","Jump and turn and land","Cartwheel and land",
+      "Jump and half turn" ] },
+    { title: "Wooden Bench", remark: true, items: [
+      "Walking / Simple Walk","Crawling","Crawling through tunnel","Camel Walk","Frog Jump",
+      "Straight leg simple walk","Side Walk","Backward Walk","Hopping","Toe Walk","Dip Walk",
+      "Stroke walk / kick and walk","V Seat","Army Crawl","Placement and Assembling of Equipment" ] },
+  ]},
+  { section: "Roller: Box Roller, Slide", groups: [
+    { title: "Small Slide / Slope", remark: true, items: [
+      "Crawling upward","Crawling downward","Forward roll","Backward roll","Free hand roll",
+      "Wall Handstand","Backbend" ] },
+    { title: "Roller – Wooden", remark: true, items: [
+      "Forward roll","Forward Roll to Toddler","Backward roll","Back Walkover",
+      "Handstand backbend / front walkover" ] },
+  ]},
+  { section: "Bar Activities: Single Bar, Double Bar, Uneven Bar, Ladder climbing", groups: [
+    { title: "Single Bar", remark: true, items: [
+      "Bar Assembling by self","Hanging","Swinging","Bar holding Grip","Tuck Hold / Tuck hang",
+      "Spider Hold","L Hold / Straddle L","Support","Middle Hold","Peek-a-boo",
+      "Roll Over / Front Roll","Bent Arm Hang","Bent Arm ladder climb","Tuck and Pull",
+      "Kick Over","Hip Circle","Bent Knee Inverted Hang","Jump and catch the bar",
+      "Jump catch and land","Using Props for Activities" ] },
+    { title: "Double Bar (Boxes, Bar)", remark: true, items: [
+      "Support / Simple Hold","Tuck Hold","Camel Hold","Crab Hold / tummy table","Swings",
+      "L Hold","Handstand","Inverted Hang","Swing and out" ] },
+  ]},
+  { section: "Vault: Water melon, Slide, 3 piece, Big Beam", groups: [
+    { title: "Vault", remark: true, items: [
+      "Water Melon","Back walk over","Lay down and front roll","Vault","Vault Running","Take off",
+      "Squat On","Jump Up","Straddle Stand","Run-Jump-Roll (Slide & soft Mat)",
+      "Forward roll on equipment","Handspring","Dive Roll" ] },
+    { title: "Big Beam – Vault", remark: true, items: [
+      "Squat on / frog","Straddle Stand","Middle stand","Straddle Out","Handstand" ] },
+  ]},
+  { section: "Ball: Sports Skill & Athletics", groups: [
+    { title: "Ball Activities", remark: true, items: [
+      "Kicking","Under Arm Throw & Catch","Upper Arm Throw & Catch","One Arm Throw & Catch",
+      "Ball Race","Potato race","Relay Race","Javelin","Shot put","Running games",
+      "Agility games","Ball Dribbling" ] },
+  ]},
+];
+
+
+const COLS = [["perform","I can perform"],["teach","I can teach"],["both","I can perform & teach"]];
+const KEY = "jungle-cubs-assessment-v1";
+
+/* ========= 2. STATE – stored in the database through the server API ========= */
+let state = { trainer: "", jcg: "", checks: {}, remarks: {}, answers: {} };
+const status = t => { document.getElementById("status").textContent = t; document.getElementById("saveMsg").textContent = t; };
+let dirty = false;
+const url = () => "/api/assessments/" + encodeURIComponent(state.trainer.trim());
+
+function save() {            // called on every tick / typing: just marks "unsaved"
+  dirty = true;
+  status("Unsaved changes – press Save my data");
+}
+
+async function saveNow() {   // called by the Save my data button
+  state.trainer = document.getElementById("trainer").value.trim();
+  if (!state.trainer) { status("Enter your trainer name first"); document.getElementById("trainer").focus(); return; }
+  const btn = document.getElementById("saveBtn");
+  btn.disabled = true; status("Saving…");
+  try {
+    const r = await fetch(url(), { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(state) });
+    if (r.ok) { dirty = false; status("Saved to database ✓"); } else status("Save failed – try again");
+  } catch (e) { status("Server not reachable – not saved"); }
+  updateLock();
+}
+
+function updateLock() {
+  const ok = document.getElementById("trainer").value.trim() !== "" &&
+             document.getElementById("jcg").value.trim() !== "";
+  document.querySelectorAll("#app input").forEach(el => el.disabled = !ok);
+  document.getElementById("saveBtn").disabled = !ok;
+  document.getElementById("lockNote").style.display = ok ? "none" : "block";
+}
+
+function applyState() {
+  document.getElementById("jcg").value = state.jcg || "";
+  document.querySelectorAll("[data-k]").forEach(el => el.checked = !!state.checks[el.dataset.k]);
+  document.querySelectorAll("[data-r]").forEach(el => el.value = state.remarks[el.dataset.r] || "");
+  document.querySelectorAll("[data-q]").forEach(el => el.value = state.answers[el.dataset.q] || "");
+  updateLock();
+  updateProgress();
+}
+
+async function load(name) {
+  const prev = state, wasDirty = dirty;   // keep any ticks made before the name was typed
+  state = { trainer: name, jcg: "", checks: {}, remarks: {}, answers: {} };
+  try {
+    const r = await fetch(url());
+    if (r.ok) {
+      if (wasDirty && !confirm("A saved assessment exists for this name. Replace your current ticks with it?")) {
+        state = Object.assign(prev, { trainer: name }); dirty = true; applyState(); return;
+      }
+      state = Object.assign(state, await r.json(), { trainer: name }); dirty = false;
+      status("Loaded saved assessment ✓");
+    } else if (wasDirty) {
+      state = Object.assign(prev, { trainer: name }); dirty = true;
+      status("Unsaved changes – press Save my data");
+    } else { status("New assessment – tick items, then press Save my data"); }
+  } catch (e) { status("Server not reachable"); }
+  applyState();
+}
+
+/* ========= 3. RENDER ========= */
+const esc = s => s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;");
+let total = 0;
+let html = "";
+
+FORM.forEach((sec, si) => {
+  html += `<h2 class="section">${esc(sec.section)}</h2>`;
+  sec.groups.forEach((g, gi) => {
+    html += `<div class="group"><table><caption>${esc(g.title)}</caption><thead><tr><th>Exercise</th>`;
+    COLS.forEach(c => html += `<th>${c[1]}</th>`);
+    html += `<th>Remark</th>`;
+    html += `</tr></thead><tbody>`;
+    g.items.forEach((name, ii) => {
+      const id = `${si}-${gi}-${ii}`;
+      total++;
+      html += `<tr><td class="name">${esc(name)}</td>`;
+      COLS.forEach(c => {
+        const k = `${id}-${c[0]}`;
+        html += `<td><input type="checkbox" data-k="${k}" aria-label="${esc(name)}: ${c[1]}" ${state.checks[k] ? "checked" : ""}></td>`;
+      });
+      html += `<td><input class="remark" type="text" data-r="${id}" value="${esc(state.remarks[id] || "")}" aria-label="Remark for ${esc(name)}"></td>`;
+      html += `</tr>`;
+    });
+    html += `</tbody></table>`;
+    if (g.question) {
+      const qid = `${si}-${gi}`;
+      html += `<div class="q"><label>${esc(g.question)}<br><input class="remark" type="text" data-q="${qid}" value="${esc(state.answers[qid] || "")}"></label></div>`;
+    }
+    html += `</div>`;
+  });
+});
+
+
+document.getElementById("app").innerHTML = html;
+document.getElementById("trainer").value = state.trainer;
+
+/* ========= 4. EVENTS ========= */
+function updateProgress() {
+  const rated = new Set(Object.keys(state.checks).filter(k => state.checks[k])
+    .map(k => k.split("-").slice(0, 3).join("-"))).size;
+  const p = Math.round(rated / total * 100);
+  document.getElementById("pct").textContent = `${rated} of ${total} exercises rated (${p}%)`;
+  document.getElementById("fill").style.width = p + "%";
+}
+
+document.getElementById("app").addEventListener("input", e => {
+  const t = e.target;
+  if (t.dataset.k) state.checks[t.dataset.k] = t.checked;
+  if (t.dataset.r) state.remarks[t.dataset.r] = t.value;
+  if (t.dataset.q) state.answers[t.dataset.q] = t.value;
+  save(); updateProgress();
+});
+
+document.getElementById("jcg").addEventListener("input", e => { state.jcg = e.target.value; updateLock(); if (state.trainer || e.target.value) save(); });
+document.getElementById("trainer").addEventListener("input", updateLock);
+document.getElementById("trainer").addEventListener("change", e => load(e.target.value.trim()));
+
+/* ========= DOWNLOAD (Word / PDF) ========= */
+function exportInfo() {
+  state.trainer = document.getElementById("trainer").value.trim();
+  state.jcg = document.getElementById("jcg").value.trim();
+  if (!state.trainer || !state.jcg) { status("Enter your name and JCG code first"); return null; }
+  const base = ("JCG-" + state.jcg + "-" + state.trainer).replace(/[^\w\-]+/g, "_");
+  return { base, date: new Date().toLocaleDateString() };
+}
+const rowId = (si, gi, ii) => `${si}-${gi}-${ii}`;
+
+function downloadWord() {
+  const info = exportInfo(); if (!info) return;
+  let h = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8">
+  <style>body{font-family:Calibri,Arial,sans-serif;font-size:10pt} h1{font-size:16pt} h2{background:#f2b632;padding:4px} h3{margin:10px 0 4px}
+  table{border-collapse:collapse;width:100%} th,td{border:1px solid #888;padding:3px 5px;font-size:9pt} th{background:#dcebd2} td.c{text-align:center}</style></head><body>
+  <h1>Jungle Cubs Gym – Trainers Self Assessment</h1>
+  <p><b>Trainer:</b> ${esc(state.trainer)} &nbsp;&nbsp; <b>JCG code:</b> ${esc(state.jcg)} &nbsp;&nbsp; <b>Date:</b> ${info.date}</p>`;
+  FORM.forEach((sec, si) => {
+    h += `<h2>${esc(sec.section)}</h2>`;
+    sec.groups.forEach((g, gi) => {
+      h += `<h3>${esc(g.title)}</h3><table><tr><th>Exercise</th>${COLS.map(c => `<th>${c[1]}</th>`).join("")}<th>Remark</th></tr>`;
+      g.items.forEach((n, ii) => {
+        const id = rowId(si, gi, ii);
+        h += `<tr><td>${esc(n)}</td>${COLS.map(c => `<td class="c">${state.checks[id + "-" + c[0]] ? "✓" : ""}</td>`).join("")}<td>${esc(state.remarks[id] || "")}</td></tr>`;
+      });
+      h += `</table>`;
+      if (g.question) h += `<p><i>${esc(g.question)}</i> ${esc(state.answers[si + "-" + gi] || "")}</p>`;
+    });
+  });
+  h += `</body></html>`;
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob(["\ufeff", h], { type: "application/msword" }));
+  a.download = info.base + ".doc"; a.click();
+  status("Word file downloaded ✓");
+}
+
+function downloadPDF() {
+  const info = exportInfo(); if (!info) return;
+  if (!window.jspdf) { status("PDF tool did not load – check your internet connection"); return; }
+  const doc = new window.jspdf.jsPDF({ unit: "pt", format: "a4" });
+  doc.setFontSize(16); doc.text("Jungle Cubs Gym – Trainers Self Assessment", 40, 44);
+  doc.setFontSize(10); doc.text(`Trainer: ${state.trainer}     JCG code: ${state.jcg}     Date: ${info.date}`, 40, 62);
+  let y = 78;
+  FORM.forEach((sec, si) => sec.groups.forEach((g, gi) => {
+    const body = g.items.map((n, ii) => {
+      const id = rowId(si, gi, ii);
+      return [n, ...COLS.map(c => state.checks[id + "-" + c[0]] ? "Yes" : ""), state.remarks[id] || ""];
+    });
+    if (g.question) body.push([{ content: g.question + "  " + (state.answers[si + "-" + gi] || ""), colSpan: 5, styles: { fontStyle: "italic" } }]);
+    doc.autoTable({
+      startY: y, margin: { left: 40, right: 40 },
+      head: [[{ content: sec.section + "  >  " + g.title, colSpan: 5, styles: { fillColor: [242, 182, 50], textColor: 30 } }],
+             ["Exercise", ...COLS.map(c => c[1]), "Remark"]],
+      body, theme: "grid", styles: { fontSize: 8, cellPadding: 3 },
+      headStyles: { fillColor: [47, 107, 58] },
+      columnStyles: { 1: { halign: "center" }, 2: { halign: "center" }, 3: { halign: "center" } },
+    });
+    y = doc.lastAutoTable.finalY + 16;
+  }));
+  doc.save(info.base + ".pdf");
+  status("PDF downloaded ✓");
+}
+
+document.getElementById("dlWord").onclick = () => { downloadWord(); document.getElementById("dl").open = false; };
+document.getElementById("dlPdf").onclick  = () => { downloadPDF();  document.getElementById("dl").open = false; };
+
+document.getElementById("reset").onclick = () => {
+  if (confirm("Clear every tick and remark?")) {
+    state.checks = {}; state.remarks = {}; state.answers = {};
+    applyState(); save();
+  }
+};
+
+document.getElementById("saveBtn").onclick = saveNow;
+window.addEventListener("beforeunload", e => { if (dirty) { e.preventDefault(); e.returnValue = ""; } });
+
+updateLock();
+updateProgress();
+</script>
+</body>
+</html>
